@@ -1,8 +1,14 @@
+# Kuomat Pelaa – Posterigeneraattori
+
+Luo 1080×1350 some/podcast-kansikuvia kahdesta kuvasta ja jakson kuvaustekstistä.
+
+## Vaatimukset
+
 ```
 pip install pillow
 ```
 
-```
-python kuomat_pelaa_poster.py kuva1.jpg kuva2.jpg --body "Tässä jaksossa puhutaan Sea of Starsista, Muumipeikosta ja viikon pelikuulumisista." -o jakso.png
-```
+## Käyttö – UI
 
+```
+python kuo
