@@ -4,3 +4,4 @@ __pycache__/
 *.spec
 *.pyc
 jakso.png
+.buildenv/
