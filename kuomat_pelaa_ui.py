@@ -152,4 +152,13 @@ class App(tk.Tk):
 
     def _done(self, path):
         self.btn.configure(state="normal", text="✦  Luo posteri")
-    
+        self.status.configure(text=f"Valmis: {path}", fg="#50e8a0")
+
+    def _error(self, msg):
+        self.btn.configure(state="normal", text="✦  Luo posteri")
+        self.status.configure(text="Virhe posterin luonnissa", fg="#e86060")
+        messagebox.showerror("Virhe", msg)
+
+
+if __name__ == "__main__":
+    App().mainloop()
