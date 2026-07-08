@@ -1,6 +1,8 @@
 # Kuomat Pelaa – Posterigeneraattori
 
-Luo 1080×1350 some/podcast-kansikuvia kahdesta kuvasta ja jakson kuvaustekstistä.
+Luo 1080×1350 some/podcast-kansikuvia yhdestä tai kahdesta kuvasta ja jakson kuvaustekstistä.
+
+Kun jaksossa käsitellään kahta peliä, käytä kahta kuvaa (ylä + ala). Kun jaksossa on vain yksi peli, käytä yhtä kuvaa, joka täyttää koko kuva-alueen.
 
 ## Vaatimukset
 
@@ -16,10 +18,20 @@ python kuomat_pelaa_ui.py
 
 Avaa graafisen käyttöliittymän: valitse yläkuva, alakuva, kirjoita jakson kuvaus ja paina *Luo posteri*. Kuva tallentuu `jakso.png`-nimellä samaan kansioon.
 
+Jos jaksossa on vain yksi peli, rastita **Vain yksi peli (yksi kuva)** — tällöin valitset vain yhden kuvan.
+
 ## Käyttö – komentorivi
+
+Kaksi peliä (kaksi kuvaa):
 
 ```
 python kuomat_pelaa_poster.py kuva1.jpg kuva2.jpg --body "Jakson kuvaus tähän." -o jakso.png
+```
+
+Yksi peli (yksi kuva):
+
+```
+python kuomat_pelaa_poster.py kuva1.jpg --body "Jakson kuvaus tähän." -o jakso.png
 ```
 
 ---

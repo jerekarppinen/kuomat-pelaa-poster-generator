@@ -39,6 +39,10 @@ echo "Asennetaan riippuvuudet (pillow, pyinstaller)..."
 pip install --quiet --upgrade pip
 pip install --quiet pillow pyinstaller
 
+# Tyhjennä vanhat buildin tulokset, jotta paketti on aina ajan tasalla
+echo "Tyhjennetään vanhat buildit (build/ dist/)..."
+rm -rf build dist
+
 echo "Rakennetaan suoritettava tiedosto..."
 pyinstaller \
     --onefile \

@@ -32,6 +32,14 @@ def cover_crop(img, target_w, target_h):
     top = (new_h - target_h) // 2
     return img.crop((left, top, left + target_w, top + target_h))
 
+def contain_fit(img, target_w, target_h):
+    """Scale image to fit fully inside target area (no cropping)."""
+    img = img.convert("RGB")
+    scale = min(target_w / img.width, target_h / img.height)
+    new_w = round(img.width * scale)
+    new_h = round(img.height * scale)
+    return img.resize((new_w, new_h), Image.LANCZOS)
+
 def get_font(size):
     candidates = [
         "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
@@ -150,13 +158,27 @@ def rounded_rect_layer(x, y, w, h, radius, fill, outline=None, outline_width=1):
 def make_poster(top_image, bottom_image, body, output):
     canvas = Image.new("RGBA", (W, H), (7, 15, 20, 255))
 
-    top = cover_crop(Image.open(top_image), W, TOP_H)
-    bottom = cover_crop(Image.open(bottom_image), W, BOTTOM_H)
+    if bottom_image:
+        # Kaksi peliä: kaksi kuvaa päällekkäin.
+        top = cover_crop(Image.open(top_image), W, TOP_H)
+        bottom = cover_crop(Image.open(bottom_image), W, BOTTOM_H)
+        canvas.paste(top, (0, 0))
+        canvas.paste(bottom, (0, TOP_H))
+    else:
+        # Yksi peli: koko pelikuva näkyviin (fit), reunat täytetään
+        # saman kuvan sumennetulla versiolla, ettei mikään leikkaudu pois.
+        src = Image.open(top_image)
 
-    canvas.paste(top, (0, 0))
-    canvas.paste(bottom, (0, TOP_H))
+        bg = cover_crop(src, W, IMAGE_AREA_H).filter(ImageFilter.GaussianBlur(30))
+        bg = Image.blend(bg, Image.new("RGB", (W, IMAGE_AREA_H), (7, 15, 20)), 0.4)
+        canvas.paste(bg, (0, 0))
 
-    # Longer fade helps blend second image into the text area.
+        fitted = contain_fit(src, W, IMAGE_AREA_H)
+        ox = (W - fitted.width) // 2
+        oy = (IMAGE_AREA_H - fitted.height) // 2
+        canvas.paste(fitted, (ox, oy))
+
+    # Longer fade helps blend the image(s) into the text area.
     add_bottom_gradient(canvas, IMAGE_AREA_H - 230, 270, 235)
 
     draw = ImageDraw.Draw(canvas)
@@ -212,12 +234,16 @@ def make_poster(top_image, bottom_image, body, output):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Tee 1080x1350 podcast-/somekuva kahdesta kuvasta ja automaattisesti sovitetusta leipätekstistä."
+        description="Tee 1080x1350 podcast-/somekuva yhdestä tai kahdesta kuvasta ja automaattisesti sovitetusta leipätekstistä."
     )
-    parser.add_argument("top_image", help="Ylempi kuva")
-    parser.add_argument("bottom_image", help="Alempi kuva")
+    parser.add_argument("images", nargs="+", help="Yksi kuva (yksi peli) tai kaksi kuvaa (kaksi peliä)")
     parser.add_argument("--body", required=True, help="Kuvaan tuleva leipäteksti")
     parser.add_argument("-o", "--output", default="jakso.png", help="Tulostiedosto, esim. jakso.png")
     args = parser.parse_args()
 
-    make_poster(args.top_image, args.bottom_image, args.body, args.output)
+    if len(args.images) > 2:
+        parser.error("Anna korkeintaan kaksi kuvaa.")
+
+    top = args.images[0]
+    bottom = args.images[1] if len(args.images) > 1 else None
+    make_poster(top, bottom, args.body, args.output)

@@ -65,6 +65,11 @@ class ImageSlot(tk.Frame):
     def get(self):
         return self.path
 
+    def set_default_label(self, label):
+        self._label_text = label
+        if self.path is None:
+            self._text.configure(text=label)
+
 
 class App(tk.Tk):
     def __init__(self):
@@ -81,7 +86,19 @@ class App(tk.Tk):
         tk.Label(self, text="KUOMAT PELAA", font=("Arial", 18, "bold"),
                  fg=ACCENT, bg=DARK_BG).pack(pady=(24, 2))
         tk.Label(self, text="Posterigeneraattori", font=("Arial", 11),
-                 fg="#8ab8be", bg=DARK_BG).pack(pady=(0, 18))
+                 fg="#8ab8be", bg=DARK_BG).pack(pady=(0, 8))
+
+        # Yksi / kaksi peliä -valinta
+        self.single_mode = tk.BooleanVar(value=False)
+        self.mode_check = tk.Checkbutton(
+            self, text="Kaksi peliä (kaksi kuvaa)",
+            variable=self.single_mode, command=self._toggle_mode,
+            font=("Arial", 11), fg="#8ab8be", bg=DARK_BG,
+            activebackground=DARK_BG, activeforeground=ACCENT,
+            selectcolor=CARD_BG, cursor="hand2",
+            highlightthickness=0, bd=0
+        )
+        self.mode_check.pack(pady=(0, 10))
 
         # Image slots
         slots_frame = tk.Frame(self, bg=DARK_BG)
@@ -120,15 +137,26 @@ class App(tk.Tk):
                                 fg="#8ab8be", bg=DARK_BG)
         self.status.pack(pady=(0, 20))
 
+    def _toggle_mode(self):
+        if self.single_mode.get():
+            self.slot_bottom.grid_remove()
+            self.slot_top.set_default_label("Kuva")
+            self.mode_check.configure(text="Vain yksi peli (yksi kuva)")
+        else:
+            self.slot_bottom.grid()
+            self.slot_top.set_default_label("Yläkuva")
+            self.mode_check.configure(text="Kaksi peliä (kaksi kuvaa)")
+
     def _generate(self):
+        single = self.single_mode.get()
         top = self.slot_top.get()
-        bottom = self.slot_bottom.get()
+        bottom = None if single else self.slot_bottom.get()
         body = self.body_text.get("1.0", "end").strip()
 
         if not top:
-            messagebox.showwarning("Puuttuu", "Valitse yläkuva.")
+            messagebox.showwarning("Puuttuu", "Valitse kuva." if single else "Valitse yläkuva.")
             return
-        if not bottom:
+        if not single and not bottom:
             messagebox.showwarning("Puuttuu", "Valitse alakuva.")
             return
         if not body:
