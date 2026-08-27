@@ -4,9 +4,15 @@ from pathlib import Path
 
 W, H = 1080, 1350
 
-TOP_H = 430
-BOTTOM_H = 430
-IMAGE_AREA_H = TOP_H + BOTTOM_H
+IMAGE_AREA_H = 860
+
+# Kahden kuvan tilassa kuvien väliin jätetään tumma rako + hohtava jakoviiva.
+GAP_H = 18
+DIVIDER_H = 4
+DIVIDER_COLOR = (92, 238, 238)
+
+TOP_H = (IMAGE_AREA_H - GAP_H) // 2
+BOTTOM_H = IMAGE_AREA_H - GAP_H - TOP_H
 
 CARD_X = 40
 CARD_Y = 910
@@ -143,6 +149,26 @@ def add_bottom_gradient(canvas, y, height, max_opacity=230):
 
     canvas.alpha_composite(gradient, (0, y))
 
+def add_divider(canvas, gap_y, gap_h):
+    """Tumma rako kuvien välissä + hohtava aksenttiviiva keskellä."""
+    band = Image.new("RGBA", (W, gap_h), (7, 15, 20, 255))
+    canvas.paste(band, (0, gap_y))
+
+    cy = gap_y + gap_h / 2
+
+    # Pehmeä hohde viivan ympärille
+    glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    gd = ImageDraw.Draw(glow)
+    gd.rectangle((0, cy - DIVIDER_H, W, cy + DIVIDER_H),
+                 fill=DIVIDER_COLOR + (150,))
+    canvas.alpha_composite(glow.filter(ImageFilter.GaussianBlur(11)))
+
+    # Terävä viiva päälle
+    d = ImageDraw.Draw(canvas)
+    d.rectangle((0, cy - DIVIDER_H / 2, W, cy + DIVIDER_H / 2),
+                fill=DIVIDER_COLOR + (240,))
+
+
 def rounded_rect_layer(x, y, w, h, radius, fill, outline=None, outline_width=1):
     layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(layer)
@@ -163,7 +189,8 @@ def make_poster(top_image, bottom_image, body, output):
         top = cover_crop(Image.open(top_image), W, TOP_H)
         bottom = cover_crop(Image.open(bottom_image), W, BOTTOM_H)
         canvas.paste(top, (0, 0))
-        canvas.paste(bottom, (0, TOP_H))
+        canvas.paste(bottom, (0, TOP_H + GAP_H))
+        add_divider(canvas, TOP_H, GAP_H)
     else:
         # Yksi peli: koko pelikuva näkyviin (fit), reunat täytetään
         # saman kuvan sumennetulla versiolla, ettei mikään leikkaudu pois.

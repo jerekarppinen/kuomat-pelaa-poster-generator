@@ -90,15 +90,20 @@ class App(tk.Tk):
 
         # Yksi / kaksi peliä -valinta
         self.single_mode = tk.BooleanVar(value=False)
-        self.mode_check = tk.Checkbutton(
-            self, text="Kaksi peliä (kaksi kuvaa)",
+        mode_frame = tk.Frame(self, bg=DARK_BG)
+        mode_frame.pack(pady=(0, 10))
+
+        radio_style = dict(
             variable=self.single_mode, command=self._toggle_mode,
             font=("Arial", 11), fg="#8ab8be", bg=DARK_BG,
             activebackground=DARK_BG, activeforeground=ACCENT,
             selectcolor=CARD_BG, cursor="hand2",
             highlightthickness=0, bd=0
         )
-        self.mode_check.pack(pady=(0, 10))
+        tk.Radiobutton(mode_frame, text="Kaksi peliä (kaksi kuvaa)",
+                       value=False, **radio_style).pack(side="left", padx=(0, 12))
+        tk.Radiobutton(mode_frame, text="Yksi peli (yksi kuva)",
+                       value=True, **radio_style).pack(side="left")
 
         # Image slots
         slots_frame = tk.Frame(self, bg=DARK_BG)
@@ -141,11 +146,9 @@ class App(tk.Tk):
         if self.single_mode.get():
             self.slot_bottom.grid_remove()
             self.slot_top.set_default_label("Kuva")
-            self.mode_check.configure(text="Vain yksi peli (yksi kuva)")
         else:
             self.slot_bottom.grid()
             self.slot_top.set_default_label("Yläkuva")
-            self.mode_check.configure(text="Kaksi peliä (kaksi kuvaa)")
 
     def _generate(self):
         single = self.single_mode.get()
